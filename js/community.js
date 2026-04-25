@@ -145,6 +145,15 @@ const Community = {
           <span>🔒</span>
           <p class="text-sm" style="margin:0">Your post is <strong>100% anonymous</strong>. No name, no profile picture — ever.</p>
         </div>
+      <div class="form-group flex items-center justify-between mb-4">
+        <div>
+          <label class="form-label" style="margin-bottom:2px">Post Anonymously</label>
+          <div class="text-xs text-muted">Hide your real name from the community</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="post-anon" checked>
+          <span class="slider round"></span>
+        </label>
       </div>
       <div class="form-group">
         <label class="form-label">Channel</label>
@@ -176,31 +185,51 @@ const Community = {
   },
 
   submitPost() {
-    const content = document.getElementById('post-content')?.value.trim();
-    const channel = document.getElementById('post-channel')?.value;
-    if (!content || content.length < 10) { MB.toast('Write a bit more to share.','error'); return; }
+    const channel = document.getElementById('post-channel').value;
+    const content = document.getElementById('post-content').value.trim();
+    const isAnon = document.getElementById('post-anon')?.checked !== false;
+    
+    if (!content || content.length < 10) { MB.toast('Write a bit more to share.', 'error'); return; }
     if (MB.isCrisis(content)) { Crisis.show(); return; }
-
-    // Moderation: block harmful content
+    
     const blocked = ['kill','murder','harm others','abuse'];
     if (blocked.some(w => content.toLowerCase().includes(w))) {
       MB.toast('This content was flagged by our moderation system.','error'); return;
     }
 
-    const adjectives = ['Gentle','Brave','Quiet','Warm','Steady','Golden','Silver','Soft','Deep','Bright'];
-    const nouns = ['River','Mountain','Star','Breeze','Harbor','Meadow','Forest','Ocean','Sunrise','Moon'];
-    const anon = `${MB.pick(adjectives)}_${MB.pick(nouns)}`;
-    const avatars = ['🌿','🌸','⭐','🌊','🍃','🌤️','🌱','💫','🌻','🦋'];
+    const profile = MB.getProfile() || {};
+    let finalName, finalAvatar;
 
-    const post = { id:MB.uid(), channel, content, anon, avatar:MB.pick(avatars), date:MB.today(), timestamp:new Date().toISOString(), reactions:{} };
+    if (isAnon) {
+      const adjectives = ['Gentle','Brave','Quiet','Warm','Steady','Golden','Silver','Soft','Deep','Bright'];
+      const nouns = ['River','Mountain','Star','Breeze','Harbor','Meadow','Forest','Ocean','Sunrise','Moon'];
+      finalName = `${MB.pick(adjectives)}_${MB.pick(nouns)}`;
+      const avatars = ['🌿','🌸','⭐','🌊','🍃','🌤️','🌱','💫','🌻','🦋'];
+      finalAvatar = MB.pick(avatars);
+    } else {
+      finalName = profile.name || 'User';
+      finalAvatar = finalName.charAt(0).toUpperCase();
+    }
+    
+    const post = {
+      id: MB.uid(),
+      channel, content,
+      anon: finalName,
+      avatar: finalAvatar,
+      date: MB.today(),
+      timestamp: new Date().toISOString(),
+      reactions: {}
+    };
+
     const posts = MB.store.get('community_posts', []);
     posts.unshift(post);
     MB.store.set('community_posts', posts);
     // Persist to Firestore
     if (window.FBService && window.auth?.currentUser) {
+      post.userId = window.auth.currentUser.uid;
       FBService.submitPost(post).catch(console.warn);
     }
-    MB.toast('Posted anonymously 🌱','success');
+    MB.toast(isAnon ? 'Posted anonymously 🌱' : 'Post shared publicly', 'success');
     this.switchTab('feed');
   },
 
