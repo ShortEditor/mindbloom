@@ -285,6 +285,14 @@
     }
   };
 
+  /* ---- Global Error Handler for Debugging ---- */
+  window.onerror = function(msg, url, line, col, error) {
+    const errEl = document.createElement('div');
+    errEl.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;z-index:9999;padding:20px;font-family:monospace;white-space:pre-wrap;';
+    errEl.innerText = `Error: ${msg}\nLine: ${line}\nCol: ${col}\nStack: ${error?.stack}`;
+    document.body.appendChild(errEl);
+  };
+
   /* ---- Boot sequence ---- */
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('crisis-modals').innerHTML = Crisis.renderOverlay();

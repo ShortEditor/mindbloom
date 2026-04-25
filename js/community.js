@@ -25,15 +25,9 @@ const Community = {
 
   seedPosts: [
     { id:'p1', channel:'anxiety', anon:'Starlight_42', avatar:'🌟', time:'2h ago', content:'Has anyone tried the 4-7-8 breathing for panic attacks? I\'ve been struggling with them before meetings and wondering if there\'s something quick that helps.', reactions:{hear:14,alone:8,share:5,strong:11} },
-    { id:'p2', channel:'work', anon:'Quiet_River', avatar:'🌊', time:'4h ago', content:'My manager scheduled another 8pm meeting. I\'m so exhausted. I keep telling myself to set boundaries but I\'m scared of losing my job. Is anyone else navigating this?', reactions:{hear:23,alone:19,share:7,strong:15} },
     { id:'p3', channel:'depression', anon:'Soft_Mountain', avatar:'⛰️', time:'6h ago', content:'Today I got out of bed before noon and made breakfast. I know that sounds small but it\'s been weeks since I managed that. Small wins.', reactions:{hear:31,alone:12,share:22,strong:28} },
     { id:'p4', channel:'relationships', anon:'Silver_Birch', avatar:'🌲', time:'8h ago', content:'I told my partner I need more emotional support and they actually listened. First time I\'ve felt truly heard in months. It\'s possible to ask for what you need.', reactions:{hear:18,alone:6,share:14,strong:21} },
-    { id:'p5', channel:'anxiety', anon:'Golden_Dusk', avatar:'🌅', time:'12h ago', content:'Therapy waitlist is 4 months. 4 months. Meanwhile I\'m trying to manage on my own. Using the journal here has genuinely helped a bit. Taking it day by day.', reactions:{hear:27,alone:31,share:9,strong:18} },
-    { id:'p6', channel:'parenting', anon:'Warm_Harbor', avatar:'⚓', time:'1d ago', content:'Anyone else feel crushing guilt about snapping at your kids when you\'re burned out? I love them so much but I\'m running on empty. How do you fill your own cup?', reactions:{hear:34,alone:28,share:11,strong:20} },
-    { id:'p7', channel:'recovery', anon:'New_Leaf', avatar:'🍃', time:'1d ago', content:'30 days sober today. I didn\'t think I\'d make it past week one. If you\'re on day 1 right now — please keep going. I see you.', reactions:{hear:45,alone:22,share:38,strong:52} },
-    { id:'p8', channel:'depression', anon:'Pale_Moon', avatar:'🌙', time:'2d ago', content:'I\'ve started saying one kind thing to myself before I sleep. Feels fake at first. But I\'m noticing it gets a little easier each night. Dr Neff\'s self-compassion stuff actually works.', reactions:{hear:19,alone:8,share:15,strong:24} },
-    { id:'p9', channel:'work', anon:'Deep_Current', avatar:'💧', time:'2d ago', content:'Quit my toxic job with nothing lined up. Terrifying and liberating. Mental health has to come first. Savings will last a few months. Wish me luck.', reactions:{hear:29,alone:11,share:8,strong:41} },
-    { id:'p10', channel:'anxiety', anon:'Cedar_Sky', avatar:'🌤️', time:'3d ago', content:'Grounding technique that\'s been working for me: hold an ice cube. The cold sensation immediately interrupts the anxiety spiral. Sounds weird, works well.', reactions:{hear:16,alone:7,share:12,strong:19} },
+    { id:'p7', channel:'recovery', anon:'New_Leaf', avatar:'🍃', time:'1d ago', content:'30 days sober today. I didn\'t think I\'d make it past week one. If you\'re on day 1 right now — please keep going. I see you.', reactions:{hear:45,alone:22,share:38,strong:52} }
   ],
 
   myReactions: {},
@@ -68,14 +62,25 @@ const Community = {
     else this.renderBuddy(content);
   },
 
-  renderFeed(el) {
-    const userPosts = MB.store.get('community_posts', []);
-    const allPosts = [...userPosts.map(p => ({...p, isOwn:true})), ...this.seedPosts].sort((a,b) => {
-      const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-      const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-      return bTime - aTime;
-    });
-    const filtered = this.activeChannel === 'all' ? allPosts : allPosts.filter(p => p.channel === this.activeChannel);
+  async renderFeed(el) {
+    el.innerHTML = '<div class="text-center mt-8"><span class="emoji-bounce" style="font-size:2rem">⏳</span><p class="text-muted">Loading community...</p></div>';
+    
+    let allPosts = [];
+    if (window.FBService && window.auth?.currentUser) {
+      allPosts = await FBService.getCommunityPosts(this.activeChannel);
+      // Determine isOwn for UI
+      const uid = FBService.uid();
+      allPosts.forEach(p => p.isOwn = (p.userId === uid));
+    }
+    
+    // Fallback to local + seed if Firebase fails or is empty
+    if (!allPosts.length) {
+      const userPosts = MB.store.get('community_posts', []);
+      allPosts = [...userPosts.map(p => ({...p, isOwn:true})), ...this.seedPosts];
+      if (this.activeChannel !== 'all') {
+        allPosts = allPosts.filter(p => p.channel === this.activeChannel);
+      }
+    }
 
     el.innerHTML = `
       <div style="overflow-x:auto;margin-bottom:16px">
@@ -89,7 +94,7 @@ const Community = {
         </div>
       </div>
       <div class="stagger-children" id="post-feed">
-        ${filtered.length ? filtered.map(p => this.postCard(p)).join('') : '<p class="text-center text-muted mt-8">No posts in this channel yet. Be the first to share!</p>'}
+        ${allPosts.length ? allPosts.map(p => this.postCard(p)).join('') : '<p class="text-center text-muted mt-8">No posts in this channel yet. Be the first to share!</p>'}
       </div>
     `;
   },

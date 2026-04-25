@@ -110,83 +110,89 @@ const App = {
    ============================================ */
 const Home = {
   render() {
-    const el = document.getElementById('screen-home');
-    const profile = MB.getProfile() || {};
-    const name = profile.name || 'Friend';
-    const today = MB.today();
-    const moods = MB.store.get('moods', []);
-    const todayMood = moods.find(m => m.date === today);
-    const streak = this.calcStreak(moods);
-    const journals = MB.store.get('journals', []);
-    const todayJournal = journals.find(j => j.date === today);
-    const planItems = MB.store.get('plan_' + today, []);
-    const donePlan = planItems.filter(p => p.done).length;
+    try {
+      const el = document.getElementById('screen-home');
+      if (!el) return;
+      const profile = MB.getProfile() || {};
+      const name = profile.name || 'Friend';
+      const today = MB.today();
+      const moods = MB.store.get('moods', []);
+      const todayMood = moods.find(m => m.date === today);
+      const streak = this.calcStreak(moods);
+      const journals = MB.store.get('journals', []);
+      const todayJournal = journals.find(j => j.date === today);
+      const planItems = MB.store.get('plan_' + today, []);
+      const donePlan = planItems.filter(p => p.done).length;
 
-    el.innerHTML = `
-      <div class="section-header">
-        <div class="greeting">${MB.greeting()}, ${name} 👋</div>
-        <h2>How are you <span class="gradient-text">today?</span></h2>
-        <p class="mt-2">Your wellness journey continues.</p>
-      </div>
+      el.innerHTML = `
+        <div class="section-header">
+          <div class="greeting">${MB.greeting()}, ${name} 👋</div>
+          <h2>How are you <span class="gradient-text">today?</span></h2>
+          <p class="mt-2">Your wellness journey continues.</p>
+        </div>
 
-      ${!todayMood ? `
-      <div class="card-highlight mb-6 card-interactive" onclick="App.navigate('mood')" id="home-mood-prompt">
-        <div class="flex items-center gap-4">
-          <div style="font-size:2.5rem">🌤️</div>
-          <div>
-            <div class="font-heading font-bold" style="margin-bottom:4px;">Check in with yourself</div>
-            <div class="text-sm text-muted">Log today's mood — takes 30 seconds</div>
+        ${!todayMood ? `
+        <div class="card-highlight mb-6 card-interactive" onclick="App.navigate('mood')" id="home-mood-prompt">
+          <div class="flex items-center gap-4">
+            <div style="font-size:2.5rem">${MB.icon('sun') || '🌤️'}</div>
+            <div>
+              <div class="font-heading font-bold" style="margin-bottom:4px;">Check in with yourself</div>
+              <div class="text-sm text-muted">Log today's mood — takes 30 seconds</div>
+            </div>
+            <div style="margin-left:auto; color:var(--c-primary-light)">→</div>
           </div>
-          <div style="margin-left:auto; color:var(--c-primary-light)">→</div>
         </div>
-      </div>
-      ` : `
-      <div class="card mb-6" style="border-color:${MB.moodColor(todayMood.score)}33">
-        <div class="flex items-center gap-4">
-          <div style="font-size:2.5rem">${MB.moodFace ? MB.moodFace(todayMood.score) : '🙂'}</div>
-          <div>
-            <div class="font-heading font-bold">Feeling ${MB.moodLabels[todayMood.score - 1] || 'Okay'}</div>
-            <div class="text-sm text-muted">Today's check-in done ✓</div>
+        ` : `
+        <div class="card mb-6" style="border-color:${MB.moodColor(todayMood.score)}33">
+          <div class="flex items-center gap-4">
+            <div style="font-size:2.5rem;color:${MB.moodColor(todayMood.score)}">${MB.moodFace ? MB.moodFace(todayMood.score) : '🙂'}</div>
+            <div>
+              <div class="font-heading font-bold">Feeling ${MB.moodLabels ? MB.moodLabels[todayMood.score - 1] || 'Okay' : 'Okay'}</div>
+              <div class="text-sm text-muted">Today's check-in done ✓</div>
+            </div>
+            <div class="badge badge-accent" style="margin-left:auto">${todayMood.score}/10</div>
           </div>
-          <div class="badge badge-accent" style="margin-left:auto">${todayMood.score}/10</div>
         </div>
-      </div>
-      `}
+        `}
 
-      <div class="grid-2 mb-6 stagger-children">
-        <div class="stat-card card-interactive" onclick="App.navigate('mood')">
-          <div class="stat-value gradient-text">${streak}</div>
-          <div class="stat-label">🔥 Day Streak</div>
+        <div class="grid-2 mb-6 stagger-children">
+          <div class="stat-card card-interactive" onclick="App.navigate('mood')">
+            <div class="stat-value gradient-text">${streak}</div>
+            <div class="stat-label">🔥 Day Streak</div>
+          </div>
+          <div class="stat-card card-interactive" onclick="App.navigate('mood')">
+            <div class="stat-value" style="color:var(--c-accent)">${moods.length}</div>
+            <div class="stat-label">Check-ins Total</div>
+          </div>
+          <div class="stat-card card-interactive" onclick="App.navigate('journal')">
+            <div class="stat-value" style="color:var(--c-gold)">${journals.length}</div>
+            <div class="stat-label">Journal Entries</div>
+          </div>
+          <div class="stat-card card-interactive" onclick="App.navigate('tools')">
+            <div class="stat-value" style="color:var(--c-coral)">${donePlan}/${planItems.length || '—'}</div>
+            <div class="stat-label">Today's Plan</div>
+          </div>
         </div>
-        <div class="stat-card card-interactive" onclick="App.navigate('mood')">
-          <div class="stat-value" style="color:var(--c-accent)">${moods.length}</div>
-          <div class="stat-label">Check-ins Total</div>
-        </div>
-        <div class="stat-card card-interactive" onclick="App.navigate('journal')">
-          <div class="stat-value" style="color:var(--c-gold)">${journals.length}</div>
-          <div class="stat-label">Journal Entries</div>
-        </div>
-        <div class="stat-card card-interactive" onclick="App.navigate('tools')">
-          <div class="stat-value" style="color:var(--c-coral)">${donePlan}/${planItems.length || '—'}</div>
-          <div class="stat-label">Today's Plan</div>
-        </div>
-      </div>
 
-      <h3 class="mb-4">Quick Actions</h3>
-      <div class="stagger-children">
-        ${this.quickAction('📓', 'Journal', todayJournal ? 'Entry written ✓' : 'Write today\'s thoughts', 'journal', !todayJournal ? 'btn-primary' : 'btn-ghost')}
-        ${this.quickAction('🧘', 'Meditate', '50+ sessions available', 'meditate', 'btn-ghost')}
-        ${this.quickAction('🛠️', 'CBT Tools', 'Thought records & DBT skills', 'tools', 'btn-ghost')}
-        ${this.quickAction('🤝', 'Community', 'You are not alone', 'community', 'btn-ghost')}
-      </div>
+        <h3 class="mb-4">Quick Actions</h3>
+        <div class="stagger-children">
+          ${this.quickAction('📓', 'Journal', todayJournal ? 'Entry written ✓' : 'Write today\'s thoughts', 'journal', !todayJournal ? 'btn-primary' : 'btn-ghost')}
+          ${this.quickAction('🧘', 'Meditate', 'Breathe & relax', 'meditate', 'btn-ghost')}
+          ${this.quickAction('🛠️', 'CBT Tools', 'Thought records & DBT skills', 'tools', 'btn-ghost')}
+          ${this.quickAction('🤝', 'Community', 'You are not alone', 'community', 'btn-ghost')}
+        </div>
 
-      <div class="divider"></div>
-      <div class="card-highlight">
-        <div style="font-size:1.5rem; margin-bottom:8px;">💡</div>
-        <div class="font-heading font-semibold mb-2">${this.getDailyTip().title}</div>
-        <p class="text-sm">${this.getDailyTip().body}</p>
-      </div>
-    `;
+        <div class="card card-lift mb-6 mt-6 shimmer-hover" style="border-left:4px solid var(--c-accent)">
+          <div class="font-heading font-semibold mb-2">${this.getDailyTip().title}</div>
+          <p class="text-sm">${this.getDailyTip().body}</p>
+        </div>
+      `;
+      if (window.feather) feather.replace();
+    } catch (err) {
+      const el = document.getElementById('screen-home');
+      if (el) el.innerHTML = `<div style="padding:20px;color:red;">Error rendering home: ${err.message}</div>`;
+      console.error(err);
+    }
   },
 
   quickAction(icon, title, sub, screen, btnClass) {
