@@ -4,7 +4,7 @@
 
 const App = {
   currentScreen: 'home',
-  screens: ['home','mood','journal','meditate','tools','chat'],
+  screens: ['home','mood','journal','meditate','tools','community'],
 
   init() {
     if (!MB.isOnboarded()) {
@@ -69,7 +69,7 @@ const App = {
       journal:   () => Journal.render(),
       meditate:  () => Meditation.render(),
       tools:     () => CBTTools.render(),
-      chat:      () => Chat.render(),
+      community: () => Community.render(),
     };
     if (handlers[screen]) handlers[screen]();
   },
@@ -155,17 +155,6 @@ const Home = {
         </div>
         `}
 
-      <div class="card mb-6" style="background:var(--c-primary-glow); border-color:var(--c-primary-light);">
-        <div class="flex items-center gap-2 mb-2">
-          <span style="font-size:1.2rem">🤖</span>
-          <div class="font-heading font-bold" style="color:var(--c-primary-light)">Smart Insights</div>
-        </div>
-        <p class="text-sm" style="color:var(--c-text)">
-          ${moods.length < 3 ? "You're doing great! Keep tracking your daily mood." : 
-            (moods.slice(-3).filter(m => m.score <= 4).length >= 2 ? "You've felt low a few times recently. You might be stressed. Try chatting with the AI or using the breathing tool." : "You've been feeling great lately! Keep up the positive momentum.")}
-        </p>
-      </div>
-
         <div class="grid-2 mb-6 stagger-children">
           <div class="stat-card card-interactive" onclick="App.navigate('mood')">
             <div class="stat-value gradient-text">${streak}</div>
@@ -185,12 +174,12 @@ const Home = {
           </div>
         </div>
 
-        <h3 class="mb-4">Quick Relief Tools</h3>
+        <h3 class="mb-4">Quick Actions</h3>
         <div class="stagger-children">
-          ${this.quickAction('🤖', 'AI Chat Support', 'Get instant suggestions & vent', 'chat', 'btn-primary')}
-          ${this.quickAction('🫁', 'Breathing', 'Timer-based calm exercises', 'meditate', 'btn-ghost')}
-          ${this.quickAction('📓', 'Journal', todayJournal ? 'Entry written ✓' : 'Write today\'s thoughts', 'journal', 'btn-ghost')}
+          ${this.quickAction('📓', 'Journal', todayJournal ? 'Entry written ✓' : 'Write today\'s thoughts', 'journal', !todayJournal ? 'btn-primary' : 'btn-ghost')}
+          ${this.quickAction('🧘', 'Meditate', 'Breathe & relax', 'meditate', 'btn-ghost')}
           ${this.quickAction('🛠️', 'CBT Tools', 'Thought records & DBT skills', 'tools', 'btn-ghost')}
+          ${this.quickAction('🤝', 'Community', 'You are not alone', 'community', 'btn-ghost')}
         </div>
 
         <div class="card card-lift mb-6 mt-6 shimmer-hover" style="border-left:4px solid var(--c-accent)">

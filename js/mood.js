@@ -71,9 +71,8 @@ const Mood = {
       <div class="card text-center" style="border-color:${MB.moodColor(mood.score)}44;padding:32px">
         <div style="font-size:4rem;margin-bottom:12px">${MB.moodFace(mood.score)}</div>
         <h3 class="gradient-text">${MB.moodLabels[mood.score-1]}</h3>
-        <div class="badge badge-accent mt-2">${mood.score}/10</div>
         <p class="text-sm mt-4">Today's check-in logged ✓<br>Come back tomorrow to keep your streak!</p>
-        ${mood.emotions?.length ? `<div class="chip-group mt-4" style="justify-content:center">${mood.emotions.map(e=>`<span class="chip selected text-xs">${e}</span>`).join('')}</div>` : ''}
+        ${mood.note ? `<div class="card mt-4 text-sm" style="background:var(--c-surface);font-style:italic">"${mood.note}"</div>` : ''}
       </div>`;
   },
 
