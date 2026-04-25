@@ -240,7 +240,7 @@ Tone rules:
           <div style="font-family:var(--font-heading);font-weight:700;font-size:1.05rem;color:var(--c-text)">MindMate</div>
           <div style="font-size:0.72rem;color:#52E5A3;font-weight:600;display:flex;align-items:center;gap:4px">
             <span style="width:6px;height:6px;border-radius:50%;background:#52E5A3;display:inline-block"></span>
-            Online · Powered by Gemini
+            Online
           </div>
         </div>
         <button onclick="AIChat.clearChat()" style="background:var(--c-card);border:1px solid var(--c-border);border-radius:10px;padding:6px 12px;font-size:0.72rem;color:var(--c-text-muted);cursor:pointer;font-family:var(--font-heading)">Clear</button>
