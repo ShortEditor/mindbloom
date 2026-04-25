@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MindBloom — Wellness & Mental Well-being</title>
-  <meta name="description" content="MindBloom: Your daily companion for mental wellness. Mood tracking, guided journaling, meditation, CBT tools, and peer support — all in one safe, private space.">
+  <title>MindBloom — AI-Powered Mental Wellness</title>
+  <meta name="description" content="MindBloom: Your AI-powered personal mental wellness assistant.">
   <meta name="theme-color" content="#7C6EF5">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -79,7 +79,7 @@
 <div id="splash">
   <div style="color:var(--c-primary); margin-bottom:8px;"><i data-feather="sun" width="56" height="56" stroke-width="1.5"></i></div>
   <div class="splash-logo gradient-text">MindBloom</div>
-  <div class="splash-sub">Wellness & Mental Well-being</div>
+  <div class="splash-sub">AI-Powered Wellness Assistant</div>
   <div class="splash-bar"><div class="splash-fill"></div></div>
 </div>
 
@@ -143,8 +143,8 @@
 <!-- Main App Shell -->
 <div id="app-shell" class="hidden">
 
-  <!-- Crisis FAB -->
-  <button class="crisis-fab" id="crisis-fab" aria-label="I need help now">
+  <!-- Crisis FAB (Hidden for now to focus on core AI flow) -->
+  <button class="crisis-fab hidden" id="crisis-fab" aria-label="I need help now" style="display:none">
     <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.08 3.4 2 2 0 0 1 3.05 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 16z"/></svg>
     I Need Help
   </button>
@@ -172,6 +172,9 @@
     <!-- JOURNAL SCREEN -->
     <section class="screen" id="screen-journal" aria-label="Journal"></section>
 
+    <!-- CHAT SCREEN -->
+    <section class="screen" id="screen-chat" aria-label="AI Chat"></section>
+
     <!-- MEDITATE SCREEN -->
     <section class="screen" id="screen-meditate" aria-label="Meditation"></section>
 
@@ -193,19 +196,23 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
       <span>Mood</span>
     </div>
+    <div class="nav-item" data-screen="chat" id="nav-chat" tabindex="0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Chat</span>
+    </div>
     <div class="nav-item" data-screen="journal" id="nav-journal" tabindex="0">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       <span>Journal</span>
     </div>
-    <div class="nav-item" data-screen="meditate" id="nav-meditate" tabindex="0">
+    <div class="nav-item" data-screen="meditate" id="nav-meditate" tabindex="0" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       <span>Meditate</span>
     </div>
-    <div class="nav-item" data-screen="tools" id="nav-tools" tabindex="0">
+    <div class="nav-item" data-screen="tools" id="nav-tools" tabindex="0" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
       <span>Tools</span>
     </div>
-    <div class="nav-item" data-screen="community" id="nav-community" tabindex="0">
+    <div class="nav-item" data-screen="community" id="nav-community" tabindex="0" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span>Community</span>
     </div>
@@ -224,14 +231,11 @@
 <script src="js/icons.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/firebase-service.js"></script>
-<script src="js/crisis.js"></script>
 <script src="js/onboarding.js"></script>
 <script src="js/mood.js"></script>
+<script src="js/ai-chat.js"></script>
 <script src="js/journal.js"></script>
 <script src="js/meditation.js"></script>
-<script src="js/daily-plan.js"></script>
-<script src="js/cbt-tools.js"></script>
-<script src="js/community.js"></script>
 <script src="js/app.js"></script>
 <script>
   /* ---- Auth UI ---- */
@@ -295,7 +299,6 @@
 
   /* ---- Boot sequence ---- */
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('crisis-modals').innerHTML = Crisis.renderOverlay();
 
     // Hide splash, then check auth
     setTimeout(() => {
@@ -305,7 +308,6 @@
       // Init app core services
       App.initTheme();
       App.bindNav();
-      Crisis.initFAB();
 
       // Listen for auth state
       FBService.onAuthChange(async (user) => {

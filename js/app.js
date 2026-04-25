@@ -4,7 +4,7 @@
 
 const App = {
   currentScreen: 'home',
-  screens: ['home','mood','journal','meditate','tools','community'],
+  screens: ['home','mood','chat','journal','meditate','tools','community'],
 
   init() {
     if (!MB.isOnboarded()) {
@@ -15,7 +15,6 @@ const App = {
     }
     this.initTheme();
     this.bindNav();
-    Crisis.initFAB();
   },
 
   getHashScreen() {
@@ -66,6 +65,7 @@ const App = {
     const handlers = {
       home:      () => Home.render(),
       mood:      () => Mood.render(),
+      chat:      () => AIChat.render(),
       journal:   () => Journal.render(),
       meditate:  () => Meditation.render(),
       tools:     () => CBTTools.render(),
@@ -168,18 +168,16 @@ const Home = {
             <div class="stat-value" style="color:var(--c-gold)">${journals.length}</div>
             <div class="stat-label">Journal Entries</div>
           </div>
-          <div class="stat-card card-interactive" onclick="App.navigate('tools')">
-            <div class="stat-value" style="color:var(--c-coral)">${donePlan}/${planItems.length || '—'}</div>
-            <div class="stat-label">Today's Plan</div>
+          <div class="stat-card card-interactive" onclick="App.navigate('chat')">
+            <div class="stat-value" style="color:var(--c-coral)">AI</div>
+            <div class="stat-label">AI Companion</div>
           </div>
         </div>
 
         <h3 class="mb-4">Quick Actions</h3>
         <div class="stagger-children">
-          ${this.quickAction('📓', 'Journal', todayJournal ? 'Entry written ✓' : 'Write today\'s thoughts', 'journal', !todayJournal ? 'btn-primary' : 'btn-ghost')}
-          ${this.quickAction('🧘', 'Meditate', 'Breathe & relax', 'meditate', 'btn-ghost')}
-          ${this.quickAction('🛠️', 'CBT Tools', 'Thought records & DBT skills', 'tools', 'btn-ghost')}
-          ${this.quickAction('🤝', 'Community', 'You are not alone', 'community', 'btn-ghost')}
+          ${this.quickAction('🤖', 'AI Companion', 'Chat with Gemini', 'chat', 'btn-primary')}
+          ${this.quickAction('📓', 'Journal', todayJournal ? 'Entry written ✓' : 'Write today\'s thoughts', 'journal', 'btn-ghost')}
         </div>
 
         <div class="card card-lift mb-6 mt-6 shimmer-hover" style="border-left:4px solid var(--c-accent)">

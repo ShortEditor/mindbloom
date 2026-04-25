@@ -11,12 +11,12 @@
    ============================================ */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyATd6O-WuPXnJ-Z_f2bz-duFP8cCXV_GMo",
-  authDomain: "mindbloom-94760.firebaseapp.com",
-  projectId: "mindbloom-94760",
-  storageBucket: "mindbloom-94760.firebasestorage.app",
-  messagingSenderId: "678825511352",
-  appId: "1:678825511352:web:e287c22330c6953dff274d"
+  apiKey: "AIzaSyDcpJv2ZQs7LFQESiGiTJKuWWnqK3OovKQ",
+  authDomain: "mindbloom-9b7b5.firebaseapp.com",
+  projectId: "mindbloom-9b7b5",
+  storageBucket: "mindbloom-9b7b5.firebasestorage.app",
+  messagingSenderId: "798297684628",
+  appId: "1:798297684628:web:ebe750aba9a4cdd7095281"
 };
 
 // Initialize Firebase

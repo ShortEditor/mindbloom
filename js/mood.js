@@ -63,17 +63,156 @@ const Mood = {
 
       ${todayMood ? this.renderAlreadyCheckedIn(todayMood) : this.renderCheckinForm()}
     `;
-    if (!todayMood) this.bindCheckinForm();
+    if (!todayMood) {
+      this.bindCheckinForm();
+    } else if (!todayMood.aiResponse) {
+      this.generateAIResponse(todayMood.id);
+    }
   },
 
   renderAlreadyCheckedIn(mood) {
+    const mc = MB.moodColor(mood.score);
     return `
-      <div class="card text-center" style="border-color:${MB.moodColor(mood.score)}44;padding:32px">
-        <div style="font-size:4rem;margin-bottom:12px">${MB.moodFace(mood.score)}</div>
-        <h3 class="gradient-text">${MB.moodLabels[mood.score-1]}</h3>
-        <p class="text-sm mt-4">Today's check-in logged ✓<br>Come back tomorrow to keep your streak!</p>
-        ${mood.note ? `<div class="card mt-4 text-sm" style="background:var(--c-surface);font-style:italic">"${mood.note}"</div>` : ''}
-      </div>`;
+      <!-- Mood summary pill -->
+      <div style="display:flex;align-items:center;gap:16px;background:${mc}12;border:1px solid ${mc}33;border-radius:20px;padding:16px 20px;margin-bottom:20px">
+        <div style="font-size:3rem;line-height:1">${MB.moodFace(mood.score)}</div>
+        <div style="flex:1">
+          <div style="font-family:var(--font-heading);font-weight:700;font-size:1.1rem;color:${mc}">${MB.moodLabels[mood.score-1]}</div>
+          <div style="font-size:0.78rem;color:var(--c-text-muted);margin-top:2px">Today's check-in logged ✓</div>
+          ${mood.note ? `<div style="font-size:0.78rem;font-style:italic;color:var(--c-text-faint);margin-top:6px">"${mood.note}"</div>` : ''}
+        </div>
+        <div style="background:${mc}22;color:${mc};font-family:var(--font-heading);font-weight:800;font-size:1.3rem;padding:8px 14px;border-radius:12px">${mood.score}<span style="font-size:0.65rem;font-weight:500">/10</span></div>
+      </div>
+
+      <!-- AI Coach Card -->
+      <div id="ai-coach-card" style="position:relative;overflow:hidden;border-radius:20px;background:linear-gradient(145deg,#141827 0%,#0E1220 100%);border:1px solid rgba(124,110,245,0.35);box-shadow:0 0 40px rgba(124,110,245,0.12),0 4px 24px rgba(0,0,0,0.4)">
+        <!-- Animated top gradient bar -->
+        <div style="height:3px;width:100%;background:linear-gradient(90deg,#7C6EF5,#52E5A3,#FF8C69,#7C6EF5);background-size:300% 100%;animation:ai-gradient-shift 4s ease infinite"></div>
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <!-- Pulsing AI avatar -->
+          <div style="position:relative;flex-shrink:0">
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#7C6EF5,#52E5A3);display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 0 16px rgba(124,110,245,0.45)">🤖</div>
+            <div style="position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;background:#52E5A3;border:2px solid #0E1220;animation:ai-breathe 2s ease-in-out infinite"></div>
+          </div>
+          <div style="flex:1">
+            <div style="font-family:var(--font-heading);font-weight:700;font-size:1rem;color:var(--c-text)">AI Wellness Coach</div>
+            <div style="font-size:0.72rem;color:#7C6EF5;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:2px">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              Powered by Google Gemini
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Response Content -->
+        <div id="ai-response-content" style="padding:18px 20px 22px;line-height:1.75;font-size:0.92rem;color:var(--c-text-muted)">
+          ${mood.aiResponse ? mood.aiResponse : `
+            <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:28px 0">
+              <div style="position:relative;width:48px;height:48px">
+                <div style="position:absolute;inset:0;border-radius:50%;border:2px solid transparent;border-top-color:#7C6EF5;animation:ai-spin 1s linear infinite"></div>
+                <div style="position:absolute;inset:6px;border-radius:50%;border:2px solid transparent;border-top-color:#52E5A3;animation:ai-spin 1.5s linear infinite reverse"></div>
+                <div style="position:absolute;inset:14px;border-radius:50%;background:linear-gradient(135deg,#7C6EF5,#52E5A3);animation:ai-breathe 2s ease-in-out infinite"></div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-heading);font-weight:600;color:var(--c-text);text-align:center;font-size:0.95rem">Analyzing your mood…</div>
+                <div style="font-size:0.78rem;color:var(--c-text-faint);text-align:center;margin-top:4px">Gemini is reading how you feel ✨</div>
+              </div>
+            </div>
+          `}
+        </div>
+      </div>
+
+      <style>
+        @keyframes ai-gradient-shift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+        @keyframes ai-breathe{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.55;transform:scale(0.82)}}
+        @keyframes ai-spin{to{transform:rotate(360deg)}}
+        #ai-response-content p{margin-bottom:12px;color:var(--c-text-muted);line-height:1.75}
+        #ai-response-content strong{color:var(--c-text);font-weight:600}
+        #ai-response-content em{color:#A394FF;font-style:italic}
+        #ai-response-content blockquote{border-left:3px solid #7C6EF5;padding:10px 14px;margin:14px 0;font-style:italic;color:#A394FF;background:rgba(124,110,245,0.08);border-radius:0 10px 10px 0}
+      </style>
+    `;
+  },
+
+  async fetchGeminiInsight(entry) {
+    const apiKey = 'AIzaSyAwGXauWzQ5Ppj4G7MjepE-YXJ_HA3BF8M';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    
+    const moodLabel = MB.moodLabels[entry.score - 1];
+    const isLowMood = entry.score <= 4;
+    const isMidMood = entry.score >= 5 && entry.score <= 7;
+
+    const prompt = `You are a warm, compassionate mental wellness companion — like a caring friend who also happens to be a therapist. Your tone is gentle, human, and healing. Never clinical or robotic. Always speak directly to the user as "you".
+
+The user just checked in with how they're feeling:
+- Mood: "${moodLabel}" (${entry.score} out of 10)
+- Emotions they tagged: ${(entry.emotions || []).length > 0 ? (entry.emotions || []).join(', ') : 'not specified'}
+- What influenced their mood: ${(entry.contexts || []).length > 0 ? (entry.contexts || []).join(', ') : 'not specified'}
+- Their personal note: "${entry.note || 'nothing added'}"
+
+Write a warm, healing response that:
+1. Opens with a heartfelt, genuine acknowledgment of exactly how they're feeling — make them feel truly seen and heard. Be specific to their mood and emotions.
+2. Offer one gentle, comforting thought or perspective that might help them right now.
+3. Suggest ONE small, kind action they can take for themselves in the next few minutes (not a checklist — just a loving nudge).
+4. Close with a short, sincere affirmation — something that feels personal, not generic.
+
+${isLowMood ? 'Since they are feeling quite low, be extra gentle and validating. Let them know it is okay to not be okay.' : ''}
+${isMidMood ? 'They are in a middle ground — acknowledge the effort it takes to just show up and check in.' : ''}
+
+Format your response in clean, readable HTML. Use <p> for paragraphs, <em> for gentle emphasis, <strong> sparingly. 
+Add a styled blockquote for the affirmation like: <blockquote style="border-left:3px solid #7C6EF5; padding-left:12px; margin:12px 0; font-style:italic; color:#A394FF;">affirmation here</blockquote>
+Do NOT use markdown code blocks. Return only the raw HTML. Keep it warm, concise, and human — no more than 5-6 sentences total.`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7 }
+        })
+      });
+      const data = await response.json();
+      if (data.candidates && data.candidates[0].content.parts[0].text) {
+        let text = data.candidates[0].content.parts[0].text;
+        text = text.replace(/```html/g, '').replace(/```/g, '').trim();
+        return text;
+      }
+      return null;
+    } catch (e) {
+      console.error('Gemini API Error:', e);
+      return null;
+    }
+  },
+
+  async generateAIResponse(id) {
+    const moods = MB.store.get('moods', []);
+    const idx = moods.findIndex(m => m.id === id);
+    if (idx === -1) return;
+    const mood = moods[idx];
+
+    const responseHTML = await this.fetchGeminiInsight(mood);
+    const container = document.getElementById('ai-response-content');
+    
+    if (responseHTML) {
+      moods[idx].aiResponse = responseHTML;
+      MB.store.set('moods', moods);
+      // Persist to Firestore if available
+      if (window.FBService && window.auth?.currentUser) {
+        FBService.saveMood(moods[idx]).catch(console.warn);
+      }
+      if (container) {
+        container.innerHTML = responseHTML;
+        container.style.animation = 'none';
+        container.offsetHeight; // trigger reflow
+        container.style.animation = 'fadeIn 0.5s ease';
+      }
+    } else {
+      if (container) {
+        container.innerHTML = '<p class="text-crisis text-sm">Could not generate AI response right now. Please try again later.</p>';
+      }
+    }
   },
 
   renderCheckinForm() {
@@ -163,7 +302,8 @@ const Mood = {
       score: this.state.score,
       emotions: [...this.state.emotions],
       contexts: [...this.state.contexts],
-      note: this.state.note
+      note: this.state.note,
+      aiResponse: null  // always clear so fresh healing response is generated
     };
     const moods = MB.store.get('moods', []);
     const existing = moods.findIndex(m => m.date === entry.date);
