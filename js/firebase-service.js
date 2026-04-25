@@ -4,36 +4,38 @@
    ============================================ */
 
 const FBService = {
-  uid: () => auth.currentUser?.uid || null,
-  userRef: () => db.collection('users').doc(FBService.uid()),
+  get _auth() { return window.auth; },
+  get _db()   { return window.db; },
+  uid: () => window.auth?.currentUser?.uid || null,
+  userRef: () => window.db.collection('users').doc(FBService.uid()),
   col: (name) => FBService.userRef().collection(name),
 
   /* -------- AUTH -------- */
   async signUp(email, password, name) {
-    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    const cred = await window.auth.createUserWithEmailAndPassword(email, password);
     await cred.user.updateProfile({ displayName: name });
     await FBService.userRef().set({ name, email, createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
     return cred.user;
   },
 
   async signIn(email, password) {
-    return auth.signInWithEmailAndPassword(email, password);
+    return window.auth.signInWithEmailAndPassword(email, password);
   },
 
   async signInGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
-    const cred = await auth.signInWithPopup(provider);
+    const cred = await window.auth.signInWithPopup(provider);
     const name = cred.user.displayName || cred.user.email.split('@')[0];
     await FBService.userRef().set({ name, email: cred.user.email, createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
     return cred.user;
   },
 
   async signOut() {
-    await auth.signOut();
+    await window.auth.signOut();
   },
 
   onAuthChange(callback) {
-    return auth.onAuthStateChanged(callback);
+    return window.auth.onAuthStateChanged(callback);
   },
 
   /* -------- PROFILE -------- */
@@ -166,7 +168,7 @@ const FBService = {
 
   /* -------- COMMUNITY POSTS -------- */
   async submitPost(post) {
-    const ref = db.collection('community_posts').doc(post.id);
+    const ref = window.db.collection('community_posts').doc(post.id);
     await ref.set({ ...post, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     const posts = MB.store.get('community_posts', []);
     posts.unshift(post);
@@ -174,14 +176,14 @@ const FBService = {
   },
 
   async getCommunityPosts(channel = null, limit = 50) {
-    let query = db.collection('community_posts').orderBy('createdAt', 'desc').limit(limit);
+    let query = window.db.collection('community_posts').orderBy('createdAt', 'desc').limit(limit);
     if (channel && channel !== 'all') query = query.where('channel', '==', channel);
     const snap = await query.get();
     return snap.docs.map(d => ({ ...d.data(), time: FBService.relativeTime(d.data().createdAt?.toDate()) }));
   },
 
   async reactToPost(postId, reactionId, add) {
-    const ref = db.collection('community_posts').doc(postId);
+    const ref = window.db.collection('community_posts').doc(postId);
     const field = `reactions.${reactionId}`;
     await ref.update({ [field]: firebase.firestore.FieldValue.increment(add ? 1 : -1) });
   },
